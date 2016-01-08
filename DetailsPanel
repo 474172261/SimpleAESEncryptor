@@ -1,0 +1,135 @@
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.event.EventListenerList;
+
+public class DetailsPanel extends JPanel {
+	/**
+	 * 
+	 */
+	private static String filepath,keypath;
+	private static EventListenerList listenerList=new EventListenerList();
+	private static final long serialVersionUID = 1L;
+
+	public DetailsPanel(){
+		Dimension size=getPreferredSize();
+		size.width=200;
+		setPreferredSize(size);
+		setBorder(BorderFactory.createTitledBorder("per"));
+		
+		JLabel filepathLabel=new JLabel("FilePath ");
+		JLabel keypathLabel=new JLabel("KeyPath ");
+		
+		JTextArea filepathArea=new JTextArea(null, 2, 10);
+		JTextArea keypathArea=new JTextArea(null, 2, 10);
+		
+		JButton filebutton=new JButton("Select");
+		JButton keybutton=new JButton("Select");
+		JButton Encrypt=new JButton("Encrypt");
+		JButton Decrypt=new JButton("Decrypt");
+		
+		filebutton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				FileChoose fc=(FileChoose) new FileChoose(false);
+				filepath=fc.getFilePath();
+				filepathArea.setText("");
+				filepathArea.append(filepath);
+			}
+		});
+		keybutton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				FileChoose fc=(FileChoose) new FileChoose(true);
+				keypath=fc.getFilePath();
+				keypathArea.setText("");
+				keypathArea.append(keypath);
+			}
+		});
+		Encrypt.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				fireDetailsEvent(new DetailsEvent(this, filepath, keypath,false));
+			}
+		});
+		Decrypt.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				fireDetailsEvent(new DetailsEvent(this, filepath, keypath,true));
+			}
+		});
+		
+		setLayout(new GridBagLayout());
+		GridBagConstraints gbc=new GridBagConstraints();
+		
+		gbc.anchor =GridBagConstraints.LINE_END;
+		gbc.weightx=0.5;
+		gbc.weighty=0.5;
+		
+		gbc.gridx=0;
+		gbc.gridy=0;
+		add(filepathLabel,gbc);
+		
+		gbc.gridx=0;
+		gbc.gridy=2;
+		add(keypathLabel,gbc);		
+		
+		gbc.anchor =GridBagConstraints.LINE_START;
+		gbc.weighty=10;
+		
+		gbc.gridx=1;
+		gbc.gridy=0;
+		add(filebutton,gbc);
+		
+		gbc.gridx=1;
+		gbc.gridy=2;
+		add(keybutton,gbc);
+		
+
+		
+		gbc.anchor =GridBagConstraints.LAST_LINE_START;
+		gbc.gridx=0;
+		gbc.gridy=4;
+		add(Encrypt,gbc);
+		
+		gbc.gridx=1;
+		gbc.gridy=1;
+		add(new JScrollPane(filepathArea),gbc);
+		
+		gbc.gridx=1;
+		gbc.gridy=3;
+		add(new JScrollPane(keypathArea),gbc);
+		
+		gbc.anchor =GridBagConstraints.LAST_LINE_END;
+		gbc.gridx=1;
+		gbc.gridy=4;
+		add(Decrypt,gbc);
+		
+	}
+	
+	public void fireDetailsEvent(DetailsEvent event){
+		Object[] listeners=listenerList.getListenerList();
+		for(int i=0;i<listeners.length;i+=2){
+			if (listeners[i]==DetailsListener.class){
+				((DetailsListener)listeners[i+1]).detailsEventOccured(event);
+			}
+		}
+	}
+	
+	public void addDetailsListener(DetailsListener listener) {
+		listenerList.add(DetailsListener.class, listener);		
+	} 
+	
+	public void removeDetailsListener(DetailsListener listener) {
+		listenerList.remove(DetailsListener.class, listener);
+	}
+}
