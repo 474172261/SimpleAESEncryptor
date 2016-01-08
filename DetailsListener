@@ -1,0 +1,6 @@
+import java.util.EventListener;
+
+public interface DetailsListener extends EventListener{
+	public void detailsEventOccured(DetailsEvent event);
+
+}
