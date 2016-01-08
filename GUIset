@@ -1,0 +1,128 @@
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.EventQueue;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import java.awt.SystemColor;
+
+public class GUIset {
+
+	private JFrame frame;
+	private DetailsPanel detailsPanel;
+
+	/**
+	 * Launch the application.
+	 * @throws IOException 
+	 * @throws NoSuchAlgorithmException 
+	 * @throws BadPaddingException 
+	 * @throws IllegalBlockSizeException 
+	 * @throws InvalidAlgorithmParameterException 
+	 * @throws InvalidKeyException 
+	 */
+	public static void main(String[] args){
+        
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					GUIset window = new GUIset();
+					window.frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the application.
+	 */
+	public GUIset() {
+		initialize();
+		MainFrame();
+	}
+	
+	public void MainFrame(){
+		JTextArea textArea=new JTextArea();
+		textArea.setEditable(false);
+		textArea.setBackground(SystemColor.inactiveCaptionBorder);
+		textArea.setWrapStyleWord(true);
+		textArea.setLineWrap(true);
+		textArea.append("Warning!\nWe will delete your file after encrypted,please backup before start.\n");
+		//JButton button=new JButton("Click");
+		detailsPanel=new DetailsPanel();
+		Container pane=frame.getContentPane();
+		
+		pane.add(new JScrollPane(textArea),BorderLayout.CENTER);
+		//pane.add(button,BorderLayout.PAGE_START);
+		pane.add(detailsPanel,BorderLayout.WEST);
+		
+		detailsPanel.addDetailsListener(new DetailsListener(){
+			public void detailsEventOccured(DetailsEvent event){
+				textArea.setText("");
+				String filepath=((DetailsEvent) event).getFilePath();
+				String keypath=event.getKeyPath();
+				boolean mode=event.getMode();
+				
+				byte[] iv ={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+		        try {
+		        	FileEncrypt filetest=new FileEncrypt(keypath,filepath,iv);
+					if(mode)
+		        		if(filetest.Decrypt())
+							for (String x:filetest.processInfo.toArray(new String[filetest.processInfo.size()])){
+								textArea.append(x+"\n");
+							}
+						else{
+							textArea.append("input wrong"+"\n");
+						}
+					else{
+		        		if(filetest.Encrypt())
+							for (String x:filetest.processInfo.toArray(new String[filetest.processInfo.size()])){
+								textArea.append(x+"\n");
+							}
+						else{
+							textArea.append("input wrong"+"\n");
+						}
+					}
+							
+				} catch (InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException
+						| BadPaddingException | NoSuchAlgorithmException | IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+//				textArea.append("\n");
+//				textArea.append(filepath+"\n");
+//				textArea.append(keypath+"\n");
+				
+			}
+		});
+//		button.addActionListener(new ActionListener(){
+//			@Override
+//			public void actionPerformed(ActionEvent arg0) {
+//				// TODO Auto-generated method stub
+//				for (String x:message.toArray(new String[message.size()])){
+//					textArea.append(x+"\n");
+//				}
+//			}
+//			
+//		});
+	}
+	
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+		frame = new JFrame("FileEncrypt v1.0 VictorV");
+		frame.setBounds(100, 100, 450, 300);
+		frame.setSize(500,300);
+		frame.getContentPane().setLayout(new BorderLayout());
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+
+}
