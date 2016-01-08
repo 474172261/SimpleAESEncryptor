@@ -1,0 +1,24 @@
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+
+public class FileChoose {
+	private static String filepath;
+	public FileChoose(boolean type) {
+		JButton open=new JButton("click");
+		JFileChooser fc= new JFileChooser();
+		fc.setCurrentDirectory(new java.io.File("c:/tmp/tmp"));
+		fc.setDialogTitle("FileEncrypt v1.0");
+		if (type){
+			fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		}else{
+			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		}
+		if(fc.showOpenDialog(open)==JFileChooser.APPROVE_OPTION){
+		}
+		filepath=(fc.getSelectedFile().getAbsolutePath());
+		System.out.println(filepath);
+	}
+	public String getFilePath() {
+		return filepath;
+	}
+}
