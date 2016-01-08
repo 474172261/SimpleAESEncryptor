@@ -1,0 +1,36 @@
+import java.util.EventObject;
+
+public class DetailsEvent extends EventObject{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private String filepath,keypath;
+	private boolean mode;
+	
+	public DetailsEvent(Object source,String fpath,String kpath,boolean mode) {
+		super(source);
+		this.mode=mode;
+		this.filepath=fpath;
+		this.keypath=kpath;
+	}
+	public String getFilePath() {
+		// TODO Auto-generated method stub
+		return filepath;
+	}
+
+	public String getKeyPath() {
+		// TODO Auto-generated method stub
+		return keypath;
+	}
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return super.toString();
+	}
+	
+	public boolean getMode() {
+		return this.mode;
+	}
+
+}
