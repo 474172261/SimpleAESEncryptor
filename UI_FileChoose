@@ -6,7 +6,7 @@ public class FileChoose {
 	public FileChoose(boolean type) {
 		JButton open=new JButton("click");
 		JFileChooser fc= new JFileChooser();
-		fc.setCurrentDirectory(new java.io.File("c:/tmp/tmp"));
+		fc.setCurrentDirectory(new java.io.File("c:"));
 		fc.setDialogTitle("FileEncrypt v1.0");
 		if (type){
 			fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
