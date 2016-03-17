@@ -1,179 +1,61 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Vector;
+import java.io.*;
+import java.util.*;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-
-public class FileEncrypt extends FileTraversal{
-    private static int MAXFILESIZE=1024*1024*30,tempFileSize=MAXFILESIZE;
-    private static long filelength=0;
-    private static AESEncrypt cipher;
-    private static String filepath,filename=null;
-    private static File file;
-    private static boolean mode=false,error=false;
-    private static Vector<String> photoType=new Vector<String>();
-    public Vector<String> processInfo=null;
+public abstract  class FileTraversal {
+    private File file=null;
+    private static String filepath,filename;
     
-    public int Action() throws IOException{
-        filepath=GetFilePath();
-        filename=GetFileName();
-        String[] filetype=filename.split("\\.");
-        file=GetFileHandle();
-        filelength=file.length();
-        if (mode && "enc".compareTo(filetype[filetype.length-1])==0){
-        	//System.out.print("Decrypt");
-            BlockEncrypt();
-        }else if (!mode && "enc".compareTo(filetype[filetype.length-1]) != 0 && "dec".compareTo(filetype[filetype.length-1])!=0){
-        	//System.out.print("Encrypt");
-        	BlockEncrypt();
-            return 0;
-        }
-        return 0;
-    }
-
-    private void BlockEncrypt() throws IOException {
-        InputStream in = new FileInputStream(file);
-        processInfo.add(filepath+"\\"+filename);//Infomation
-        OutputStream out;
-        if (mode){
-        	tempFileSize=MAXFILESIZE+16;
-            out=new FileOutputStream(filepath+"/"+filename.substring(0,filename.lastIndexOf(".enc"))+".dec");
-        }else{
-            out=new FileOutputStream(filepath+"/"+filename+".enc");
-        }
-        byte[] ciphertext = null;
-        if (filelength>tempFileSize){
-            int offset=0;
-            try{
-                for(;offset<filelength;offset+=tempFileSize){
-                    long byte2read=(filelength-offset)/tempFileSize==0?filelength-offset:tempFileSize;
-                    //System.out.println(filelength+" read "+(int)byte2read+" "+(filelength-offset)/tempFileSize);
-                    byte[] fileContent=new byte[(int)byte2read];
-                    in.read(fileContent);
-                    try {
-                        if (mode)
-                            ciphertext = cipher.Decrypt(fileContent);
-                        else
-                            ciphertext = cipher.Encrypt(fileContent);
-                        out.write(ciphertext);
-                    } catch (InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException
-                            | BadPaddingException e) {
-                        e.printStackTrace();
-                    }
-                    //System.out.println("CipherL "+ciphertext.length);
-                }
-            }finally{
-                in.close();
-                out.close();
+    public abstract int Action() throws IOException;
+    private List<String> GetFileInfo(String [] pathList,String path){
+        List<String> listArr = new ArrayList<String>();
+        for (String i:pathList){
+            // System.out.println(i);
+        	filepath=path;
+        	filename=i;
+            this.file=new File(path+"/"+i);
+            if (file.isDirectory()){
+                listArr.add(file.getPath());
+                continue;
             }
-        }else{
-            byte[] fileContent=new byte[(int)filelength];
-            //System.out.println("filelength"+filelength);
-            in.read(fileContent);
             try {
-                if (mode)
-                    ciphertext = cipher.Decrypt(fileContent);
-                else
-                    ciphertext = cipher.Encrypt(fileContent);
-                out.write(ciphertext);
-            } catch (InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException
-                    | BadPaddingException e) {
-                e.printStackTrace();
-            }finally{
-                in.close();
-                out.close();
-            }
+				Action();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
-        //System.out.println("complet");
-        //file.delete();
+        return  listArr ;
     }
 
-    public boolean Encrypt(){
-    	if (error){
-    		return false;
-    	}
-    	mode=false;
-    	processInfo.add("Encrypt Mode");
-    	StartTravelsal(filepath);
-    	return true;
-    }
-    
-    public boolean Decrypt(){
-    	if(error){
-    		return false;
-    	}
-    	mode=true;
-    	processInfo.add("Decrypt Mode");
-    	StartTravelsal(filepath);
-    	return true;
-    }
-    
-    public FileEncrypt(String keypath,String fpath,byte[] iv) throws InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchAlgorithmException, IOException{
-    	//System.out.println(fpath+" "+keypath);
-    	if(fpath!=null&&keypath!=null){
-    		error=true;
-	    	byte[] password=HashCreate(keypath);
-	    	file=new File(fpath);
-	    	if(!error&&file.isDirectory()){
-	    		error=false;
-	    		filepath=fpath;
-	    		cipher=new AESEncrypt(password,iv);
-	    	}else
-	    		error=true;
-    	}else{
-    		error=true;
-    	}
-    }
-    
-    public byte[] HashCreate(String keypath) throws NoSuchAlgorithmException, IOException{
-    	photoType.add("jpg");
-    	photoType.add("jpeg");
-    	photoType.add("png");
-    	photoType.add("bmp");
-        String[] filestrings=keypath.split("/|\\\\");
-        filename=filestrings[filestrings.length-1];
-        //System.out.println("KeyGenerateFile"+filename+",");
-        String[] filenames=filename.split("\\.");
-        String filetype=filenames[filenames.length-1];
-//        for(String x:filenames)
-//        	System.out.println(x);
-    	if (processInfo==null)
-    		processInfo=new Vector<String>();
-        if(filenames.length==1||filenames[0].isEmpty()){
-    		error=true;
-    		return null;
-    	}
-        if(photoType.contains(filetype)){
-        	file=new File(keypath);
-        	if (file.length()>MAXFILESIZE){
-        		error=true;
-        		this.processInfo.add("ImageFile is too large!");
-        		return null;
-        	}
-        	error=false;
-        	byte[] filecontent = null;
-        	InputStream in = new FileInputStream(file);
-        	filecontent=new byte[(int)file.length()];
-        	MessageDigest md5=MessageDigest.getInstance("MD5");
-        	in.read(filecontent);
-        	md5.update(filecontent);
-        	byte[] filedigest=md5.digest();
-        	//System.out.println(String.format("%032x", new BigInteger(1, filedigest)));
-        	in.close();
-        	return filedigest;
-        }else{
-        	error=true;
-        	this.processInfo.add("ImageFile type Wrong!please choose right photo.");
+    public int StartTravelsal(String path){
+        List<String> pathList = new ArrayList<String>();
+        List<String> tmpList = new ArrayList<String>();
+        file=new File(path);
+        pathList=GetFileInfo(file.list(),path);
+        String[] pathStrArr = new String[pathList.size()];
+        pathStrArr = pathList.toArray(pathStrArr);
+        while(!pathList.isEmpty()){
+            path=pathList.get(0);
+            file=new File(path);
+            tmpList=GetFileInfo(file.list(),path);
+            pathList.addAll(tmpList);
+            pathList.remove(0);
+            //String[] test = new String[pathList.size()];
+            //for (String y:pathList.toArray(test))
+            //    System.out.println(y);
+            //System.out.println("");
         }
-		return null;
+        return 1;
+    }
+
+    public File GetFileHandle(){
+        return this.file;
+    }
+    public String GetFilePath(){
+        return filepath;
+    }
+
+    public String GetFileName(){
+        return filename;
     }
 }
