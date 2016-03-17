@@ -17,7 +17,7 @@ public class FileEncrypt extends FileTraversal{
     private static int MAXFILESIZE=1024*1024*30,tempFileSize=MAXFILESIZE;
     private static long filelength=0;
     private static AESEncrypt cipher;
-    private static String filepath,filename=null;
+    private static String filepath,filename=null,keyfilename;
     private static File file;
     private static boolean mode=false,error=false;
     private static Vector<String> photoType=new Vector<String>();
@@ -26,13 +26,12 @@ public class FileEncrypt extends FileTraversal{
     public int Action() throws IOException{
         filepath=GetFilePath();
         filename=GetFileName();
-        String[] filetype=filename.split("\\.");
         file=GetFileHandle();
         filelength=file.length();
-        if (mode && "enc".compareTo(filetype[filetype.length-1])==0){
+        if (mode && filename.endsWith(".enc")&& !filename.equals(keyfilename)){
         	//System.out.print("Decrypt");
             BlockEncrypt();
-        }else if (!mode && "enc".compareTo(filetype[filetype.length-1]) != 0 && "dec".compareTo(filetype[filetype.length-1])!=0){
+        }else if (!mode && !filename.endsWith(".enc")&& !filename.equals(keyfilename)){
         	//System.out.print("Encrypt");
         	BlockEncrypt();
             return 0;
@@ -46,7 +45,7 @@ public class FileEncrypt extends FileTraversal{
         OutputStream out;
         if (mode){
         	tempFileSize=MAXFILESIZE+16;
-            out=new FileOutputStream(filepath+"/"+filename.substring(0,filename.lastIndexOf(".enc"))+".dec");
+            out=new FileOutputStream(filepath+"/"+filename.substring(0,filename.lastIndexOf(".enc")));
         }else{
             out=new FileOutputStream(filepath+"/"+filename+".enc");
         }
@@ -94,7 +93,7 @@ public class FileEncrypt extends FileTraversal{
             }
         }
         //System.out.println("complet");
-        //file.delete();
+        file.delete();
     }
 
     public boolean Encrypt(){
@@ -140,9 +139,10 @@ public class FileEncrypt extends FileTraversal{
     	photoType.add("png");
     	photoType.add("bmp");
         String[] filestrings=keypath.split("/|\\\\");
-        filename=filestrings[filestrings.length-1];
+        keyfilename=filestrings[filestrings.length-1];
+        
         //System.out.println("KeyGenerateFile"+filename+",");
-        String[] filenames=filename.split("\\.");
+        String[] filenames=keyfilename.split("\\.");
         String filetype=filenames[filenames.length-1];
 //        for(String x:filenames)
 //        	System.out.println(x);
