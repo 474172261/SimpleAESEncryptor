@@ -79,7 +79,7 @@ public class GUIset {
 								textArea.append(x+"\n");
 							}
 						else{
-							textArea.append("input wrong"+"\n");
+							textArea.append("Selected wrong"+"\n");
 						}
 					else{
 		        		if(filetest.Encrypt())
@@ -87,7 +87,7 @@ public class GUIset {
 								textArea.append(x+"\n");
 							}
 						else{
-							textArea.append("input wrong"+"\n");
+							textArea.append("Selected wrong"+"\n");
 						}
 					}
 							
